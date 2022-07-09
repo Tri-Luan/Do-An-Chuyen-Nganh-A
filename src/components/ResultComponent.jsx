@@ -57,9 +57,8 @@ function addHistoryResultProcess() {
 function postHistoryResult(param) {
   axios.post(baseUrl + "historypractices/add", param).then((response) => {
     var result = response.data;
-    console.log(result);
-    clearSessionStorage();
   });
+  clearSessionStorage();
 }
 
 function renderTestCaseFail() {
@@ -94,9 +93,9 @@ function clearSessionStorage() {
   var tmp =
     sessionStorage.getItem("Total_TestCases") - sessionStorage.getItem("Pass");
   if (tmp !== 0) {
-    for (var i = 0; i < tmp; i++) {
+    for (var i = 0; i <=tmp; i++) {
       var name = String("Fail" + i);
-      sessionStorage.setItem(name, null);
+      sessionStorage.removeItem(name);
     }
   }
 }
@@ -104,7 +103,7 @@ function clearSessionStorage() {
 const Result = () => {
   const handleSave = () => {
     addHistoryResultProcess();
-  }
+  };
   return (
     <div class="container mt-5 mb-24">
       <img
@@ -125,7 +124,10 @@ const Result = () => {
           </h1>
           {displayResult()}
           <Link to="/practice">
-            <button className="btn btn-primary btn-lg btn-block mt-5">
+            <button
+              className="btn btn-primary btn-lg btn-block mt-5"
+              onClick={() => this.clearSessionStorage()}
+            >
               Quay lại luyện tập
             </button>
           </Link>

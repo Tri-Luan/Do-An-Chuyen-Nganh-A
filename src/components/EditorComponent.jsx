@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import { Fragment, PureComponent } from "react";
 import Split from "react-split";
 import { Link } from "react-router-dom";
