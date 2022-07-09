@@ -69,6 +69,8 @@ class Editor extends PureComponent {
       isError: false,
       error: null,
       content:[],
+      disabled:true,
+      disabledButton:"Đang xử lý",
     };
   }
   async componentDidMount() {
@@ -325,7 +327,7 @@ class Editor extends PureComponent {
     this.setState({ error: output, isError: true });
   }
 
-  btnSubmit_Click(code, language) {
+  async btnSubmit_Click(code, language) {
     let sampleTestCases = this.state.sampleTestCases;
     let testCases = this.state.testCases;
     let testCaseList = sampleTestCases.concat(testCases);
@@ -343,20 +345,21 @@ class Editor extends PureComponent {
           input: testCaseList[i].Input,
         },
       };
-      axios.post(serverUrl + "runs", param).then((response) => {
+      await axios.post(serverUrl + "runs", param).then((response) => {
         var result = response.data;
         this.checkTestCase(
           testCaseList[i].Output,
           testCaseList[i].Input,
           result,
-          i
         );
       });
     }
+    this.setState({ disabled: false});
+    this.setState({ disabledButton:"Nộp Bài"});
   }
   checkTestCase(Output, Input, result) {
     if (result.outcome === 15) {
-      if (Output === result.stdout) {
+      if (Output == result.stdout) {
         let temp = { accurate: "true", input: Input, output: result.stdout };
         this.setState({
           result: this.state.result.concat(temp),
@@ -382,6 +385,7 @@ class Editor extends PureComponent {
     } else if (result.outcome !== 15) {
       console.log("Error");
     }
+    return true;
   }
 
   SelectLanguage() {
@@ -689,11 +693,12 @@ class Editor extends PureComponent {
               </button>
               <Link to="/result">
                 <button
+                  disabled={this.state.disabled}
                   type="button"
                   class="inline-block px-6 py-2.5 bg-blue-400 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-500 hover:shadow-lg focus:bg-blue-500 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-600 active:shadow-lg transition duration-150 ease-in-out"
                   data-bs-dismiss="modal"
                 >
-                  NỘP BÀI
+                  {this.state.disabledButton}
                 </button>
               </Link>
             </div>

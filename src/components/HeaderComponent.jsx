@@ -20,7 +20,6 @@ const HeaderComponent = () => {
   );
   const role = sessionStorage.getItem("Role");
   const navigate = useNavigate();
-
   const handleLogout = () => {
     sessionStorage.clear();
     navigate("/");

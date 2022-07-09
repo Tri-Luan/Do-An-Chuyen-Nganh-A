@@ -4,9 +4,6 @@ import { useAuth } from './auth';
 import React, { useState } from 'react';
 const URI = 'http://104.248.145.103:4000/';
 
-
-
-
 const Login = () => {
     const [user,setUser]=useState({id:String,name:String});
     const [login,setLogin]=useState(false);

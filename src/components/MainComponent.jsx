@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Routes,Redirect} from "react-router-dom";
+import { Route, Routes} from "react-router-dom";
 
 // redux
 import { connect } from "react-redux";
