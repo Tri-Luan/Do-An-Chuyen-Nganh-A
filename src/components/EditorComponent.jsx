@@ -1,21 +1,21 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  Fragment,
-  Component,
-  PureComponent,
-} from "react";
-import { useCodeMirror } from "@uiw/react-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
+import { Fragment, PureComponent } from "react";
+import Split from "react-split";
+import { Link } from "react-router-dom";
 import React from "react";
 import axios from "axios";
+
+// import CodeMirror
 import CodeMirror from "@uiw/react-codemirror";
-import { oneDark } from "@codemirror/theme-one-dark";
+import { javascript } from "@codemirror/lang-javascript";
+// import { oneDark } from "@codemirror/theme-one-dark";
+// import { StreamLanguage } from "@codemirror/stream-parser";
+// import { go } from "@codemirror/legacy-modes/mode/go";
 import { okaidia } from "@uiw/codemirror-theme-okaidia";
 import { eclipse } from "@uiw/codemirror-theme-eclipse";
+
+//Import CSS
 import "../style/IDE.css";
-import { Tab, Listbox, Transition, Switch } from "@headlessui/react";
+import { Listbox, Transition, Switch } from "@headlessui/react";
 import {
   CheckIcon,
   SelectorIcon,
@@ -28,12 +28,9 @@ import {
   SaveAsIcon,
   ChevronDoubleRightIcon,
 } from "@heroicons/react/outline";
-import { StreamLanguage } from "@codemirror/stream-parser";
-import { go } from "@codemirror/legacy-modes/mode/go";
-import Split from "react-split";
-import { Link, useLocation } from "react-router-dom";
+
+//Import URL API
 import { serverUrl, baseUrl } from "../shared/baseUrl";
-import ReactDOM from "react-dom";
 
 class Editor extends PureComponent {
   constructor(props) {
@@ -61,27 +58,18 @@ class Editor extends PureComponent {
         },
       ],
       result: [{ accurate: String, input: String, output: String }],
-      code: `#include <stdio.h>
-      int main(){
-        int a,b;
-          scanf("%d %d",&a,&b);
-          printf("%d",a+b);
-      }`,
+      code: "",
       enabled: false,
       theme: okaidia.extension,
       Question_id: sessionStorage.getItem("Question_id"),
       Question: [],
       selected: [],
       isShowing: false,
+      isError: false,
+      error: null,
+      content:[],
     };
   }
-
-  // classNames(...classes) {
-  //   return classes.filter(Boolean).join("");
-  // }
-  // componentWillMount() {
-
-  // }
   async componentDidMount() {
     await this.getLanguages();
     await this.getSampleTestCases(this.state.Question_id);
@@ -91,6 +79,9 @@ class Editor extends PureComponent {
       return exercise.Question_id == this.state.Question_id;
     });
     this.setState({ Question: question[0] });
+    if (sessionStorage.getItem("Source_code"))
+      this.setState({ code: sessionStorage.getItem("Source_code") });
+    this.getHistory();
   }
   getSampleTestCases = async (Question_id) => {
     await axios
@@ -112,23 +103,27 @@ class Editor extends PureComponent {
   };
   renderTestCase() {
     return (
-      <div class="flex pl-4 pt-4 items-start">
-        <ul
-          class="nav nav-pills flex flex-col flex-wrap list-none pl-0 mr-4"
-          id="pills-tabVertical"
-          role="tablist"
-        >
-          {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
-            <>
-              {Idx === 0 ? (
-                <li
-                  key={Idx}
-                  class="nav-item flex-grow text-center mb-2"
-                  role="presentation"
-                >
-                  <a
-                    href={`#pills-` + sampleTestCases.ID}
-                    class="
+      <>
+        <h3 className="text-2xl text-white font-bold mb-1 text-center">
+          Test Cases
+        </h3>
+        <div class="flex pl-4 pt-4 items-start">
+          <ul
+            class="nav nav-pills flex flex-col flex-wrap list-none pl-0 mr-4"
+            id="pills-tabVertical"
+            role="tablist"
+          >
+            {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
+              <>
+                {Idx === 0 ? (
+                  <li
+                    key={Idx}
+                    class="nav-item flex-grow text-center mb-2"
+                    role="presentation"
+                  >
+                    <a
+                      href={`#pills-` + sampleTestCases.ID}
+                      class="
                           nav-link
                           block
                           font-medium
@@ -141,26 +136,28 @@ class Editor extends PureComponent {
                           focus:outline-none focus:ring-0
                           active
                         "
-                    id={`pills-` + sampleTestCases.ID + `-tabVertical`}
-                    data-bs-toggle="pill"
-                    data-bs-target={`#pills-` + sampleTestCases.ID + `Vertical`}
-                    role="tab"
-                    aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
-                    aria-selected="true"
+                      id={`pills-` + sampleTestCases.ID + `-tabVertical`}
+                      data-bs-toggle="pill"
+                      data-bs-target={
+                        `#pills-` + sampleTestCases.ID + `Vertical`
+                      }
+                      role="tab"
+                      aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
+                      aria-selected="true"
+                    >
+                      Kiểm thử {Idx + 1}{" "}
+                      {renderConditionIcon(sampleTestCases.accurate)}
+                    </a>
+                  </li>
+                ) : (
+                  <li
+                    key={Idx}
+                    class="nav-item flex-grow text-center my-2"
+                    role="presentation"
                   >
-                    Kiểm thử {Idx + 1}{" "}
-                    {renderConditionIcon(sampleTestCases.accurate)}
-                  </a>
-                </li>
-              ) : (
-                <li
-                  key={Idx}
-                  class="nav-item flex-grow text-center my-2"
-                  role="presentation"
-                >
-                  <a
-                    href={`#pills-` + sampleTestCases.ID}
-                    class="
+                    <a
+                      href={`#pills-` + sampleTestCases.ID}
+                      class="
                           nav-link
                           block
                           font-medium
@@ -172,67 +169,70 @@ class Editor extends PureComponent {
                           h-10
                           focus:outline-none focus:ring-0
                         "
-                    id={`pills-` + sampleTestCases.ID + `-tabVertical`}
-                    data-bs-toggle="pill"
-                    data-bs-target={`#pills-` + sampleTestCases.ID + `Vertical`}
-                    role="tab"
-                    aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
-                    aria-selected="false"
+                      id={`pills-` + sampleTestCases.ID + `-tabVertical`}
+                      data-bs-toggle="pill"
+                      data-bs-target={
+                        `#pills-` + sampleTestCases.ID + `Vertical`
+                      }
+                      role="tab"
+                      aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
+                      aria-selected="false"
+                    >
+                      Kiểm thử {Idx + 1}{" "}
+                      {renderConditionIcon(sampleTestCases.accurate)}
+                    </a>
+                  </li>
+                )}
+              </>
+            ))}
+          </ul>
+          <div class="tab-content" id="pills-tabContentVertical">
+            {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
+              <>
+                {Idx === 0 ? (
+                  <div
+                    key={Idx}
+                    class="tab-pane fade show active text-white"
+                    id={`pills-` + sampleTestCases.ID + `Vertical`}
+                    role="tabpanel"
+                    aria-labelledby={
+                      `pills-` + sampleTestCases.ID + `-tabVertical`
+                    }
                   >
-                    Kiểm thử {Idx + 1}{" "}
-                    {renderConditionIcon(sampleTestCases.accurate)}
-                  </a>
-                </li>
-              )}
-            </>
-          ))}
-        </ul>
-        <div class="tab-content" id="pills-tabContentVertical">
-          {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
-            <>
-              {Idx === 0 ? (
-                <div
-                  key={Idx}
-                  class="tab-pane fade show active text-white"
-                  id={`pills-` + sampleTestCases.ID + `Vertical`}
-                  role="tabpanel"
-                  aria-labelledby={
-                    `pills-` + sampleTestCases.ID + `-tabVertical`
-                  }
-                >
-                  <h1>Đầu vào: {sampleTestCases.Input}</h1>
-                  <h1>
-                    Đầu ra thực tế: {sampleTestCases.output}
-                    {/* {this.state.result.length > 0
+                    <h1>Đầu vào: {sampleTestCases.Input}</h1>
+                    <h1>
+                      Đầu ra thực tế: {sampleTestCases.output}
+                      {/* {this.state.result.length > 0
                       ? this.state.result[Idx].output
                       : "null"} */}
-                  </h1>
-                  <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
-                </div>
-              ) : (
-                <div
-                  key={Idx}
-                  class="tab-pane fade text-white"
-                  id={`pills-` + sampleTestCases.ID + `Vertical`}
-                  role="tabpanel"
-                  aria-labelledby={
-                    `pills-` + sampleTestCases.ID + `-tabVertical`
-                  }
-                >
-                  <h1>Đầu vào: {sampleTestCases.Input}</h1>
-                  <h1>
-                    Đầu ra thực tế: {sampleTestCases.output}
-                    {/* {this.state.result.length > 0
+                    </h1>
+                    <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
+                  </div>
+                ) : (
+                  <div
+                    key={Idx}
+                    class="tab-pane fade text-white"
+                    id={`pills-` + sampleTestCases.ID + `Vertical`}
+                    role="tabpanel"
+                    aria-labelledby={
+                      `pills-` + sampleTestCases.ID + `-tabVertical`
+                    }
+                  >
+                    <h1>Đầu vào: {sampleTestCases.Input}</h1>
+                    <h1>
+                      Đầu ra thực tế: {sampleTestCases.output}
+                      {/* {this.state.result.length > 0
                       ? this.state.result[Idx].output
                       : "null"} */}
-                  </h1>
-                  <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
-                </div>
-              )}
-            </>
-          ))}
+                    </h1>
+                    <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
+                  </div>
+                )}
+              </>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
   getLanguages = async () => {
@@ -290,11 +290,10 @@ class Editor extends PureComponent {
         }));
       }
     } else if (result.outcome !== 15) {
-      renderError(result);
+      this.handleError(result);
     }
   }
-
-  renderError(result) {
+  handleError(result) {
     var output = "";
     switch (result.outcome) {
       case 11:
@@ -322,18 +321,18 @@ class Editor extends PureComponent {
         output = "Error";
         break;
     }
-    // this.state
+    this.setState({ error: output, isError: true });
   }
-  
+
   btnSubmit_Click(code, language) {
     let sampleTestCases = this.state.sampleTestCases;
     let testCases = this.state.testCases;
     let testCaseList = sampleTestCases.concat(testCases);
-    console.log("TestCase", testCaseList);
     sessionStorage.setItem("Pass", 0);
     sessionStorage.setItem("Total_TestCases", testCaseList.length);
     sessionStorage.setItem("SourceCode", code);
     sessionStorage.setItem("Description", this.state.Question.Description);
+    sessionStorage.setItem("Languages", language);
     this.setState({ count: 0 });
     for (let i = 0; i < testCaseList.length; i++) {
       let param = {
@@ -351,21 +350,17 @@ class Editor extends PureComponent {
           result,
           i
         );
-        // disabledButton_Run(false);
       });
-      // this.submitCode_SampleTestCase(param, samplesampleTestCases, i);
     }
-    console.log("Tổng pass", sessionStorage.getItem("Pass"));
   }
   checkTestCase(Output, Input, result) {
     if (result.outcome === 15) {
-      if (Output == result.stdout) {
+      if (Output === result.stdout) {
         let temp = { accurate: "true", input: Input, output: result.stdout };
         this.setState({
           result: this.state.result.concat(temp),
           count: this.state.count + 1,
         });
-        console.log("pass", Output, "=", Input);
         sessionStorage.setItem(
           "Pass",
           Number(sessionStorage.getItem("Pass")) + 1
@@ -374,24 +369,23 @@ class Editor extends PureComponent {
         var name = String("Fail" + this.state.count);
         var data = String(
           "Đầu vào: " +
-          Input +
+            Input +
             " Đầu ra mong muốn: " +
             Output +
             " Đầu ra thực tế: " +
             result.stdout
         );
         sessionStorage.setItem(name, data);
-        this.setState({count:this.state.count+1});
+        this.setState({ count: this.state.count + 1 });
       }
     } else if (result.outcome !== 15) {
       console.log("Error");
-      // renderError(result);
     }
   }
 
   SelectLanguage() {
     return (
-      <div className="mx-5 mt-2 w-40">
+      <div className="mx-5 mt-[7px] w-40">
         <Listbox
           value={this.state.selected}
           onChange={(value) => this.setState({ selected: value })}
@@ -448,6 +442,55 @@ class Editor extends PureComponent {
           </div>
         </Listbox>
       </div>
+    );
+  }
+  getHistory() {
+    this.setState({ content: [] });
+    axios
+      .get(
+        baseUrl +
+          "historypractices/gethistorypractice/" +
+          sessionStorage.getItem("Student_Id")
+      )
+      .then((response) => {
+        var data = response.data;
+        this.renderHistory(data);
+      });
+  }
+  renderHistory(data) {
+    var content = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].Question_id==this.state.Question_id)
+      {
+        content.push(
+          <tr class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {i + 1}
+            </td>
+            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+              {data[i].Question_description}
+            </td>
+            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+              {this.renderCreateDate(data[i].Submit_date)}
+            </td>
+            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+              {data[i].Pass}
+            </td>
+          </tr>
+        );
+      }
+    }
+    this.setState({ content: content });
+  }
+  renderCreateDate(createDate) {
+    return String(
+      createDate.slice(8, 10) +
+        "-" +
+        createDate.slice(5, 7) +
+        "-" +
+        createDate.slice(0, 4) +
+        " " +
+        createDate.slice(11, 19)
     );
   }
 
@@ -535,7 +578,45 @@ class Editor extends PureComponent {
             role="tabpanel"
             aria-labelledby="tabs-profile-tabFill"
           >
-            Tab 3 content fill
+            <div class="flex flex-col">
+              <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+                  <div class="overflow-hidden">
+                    <table class="min-w-full">
+                      <thead class="bg-white border-b">
+                        <tr>
+                          <th
+                            scope="col"
+                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                          >
+                            STT
+                          </th>
+                          <th
+                            scope="col"
+                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                          >
+                            Tên bài
+                          </th>
+                          <th
+                            scope="col"
+                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                          >
+                            Thời gian nộp
+                          </th>
+                          <th
+                            scope="col"
+                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                          >
+                            Kiểm thử
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="table">{this.state.content}</tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -620,6 +701,61 @@ class Editor extends PureComponent {
       </div>
     );
   }
+  renderRefreshModal() {
+    return (
+      <div
+        class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
+        id="staticBackdrop"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog relative w-auto pointer-events-none">
+          <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
+            <div class="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b border-gray-200 rounded-t-md">
+              <h5
+                class="text-xl font-medium leading-normal text-gray-800"
+                id="exampleModalLabel"
+              >
+                <RefreshIcon className="text-blue-500 inline h-8 w-8" />
+                XÁC NHẬN LÀM MỚI CODE
+              </h5>
+              <button
+                type="button"
+                class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body relative p-4">
+              Bạn có muốn làm mới code không?
+            </div>
+            <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 border-t border-gray-200 rounded-b-md">
+              <button
+                type="button"
+                class="inline-block px-6 py-2 border-2 border-blue-400 text-blue-400 font-medium text-xs leading-tight uppercase rounded-full hover:text-blue-500 hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
+                data-bs-dismiss="modal"
+              >
+                Không Làm Mới Code
+              </button>
+              <button
+                type="button"
+                class="inline-block px-6 py-2.5 bg-red-600 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-red-700 hover:shadow-lg focus:bg-red-700 focus:shadow-lg focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
+                data-bs-dismiss="modal"
+                onClick={() => {
+                  this.setState({ code: "" });
+                }}
+              >
+                Làm Mới Code
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   render() {
     return (
       <section>
@@ -673,6 +809,7 @@ class Editor extends PureComponent {
           </ol>
         </nav>
         {/* Breadcrumb End */}
+
         <Split
           className="split"
           sizes={[25, 75]}
@@ -682,32 +819,28 @@ class Editor extends PureComponent {
           dragInterval={1}
         >
           {/* Tabs Start */}
-
           {this.TabsComponent()}
           {/* Tabs End */}
+
           {/* Code Editor Start  */}
           <div className="">
-            {/* <div className="flex space-x-2">
-            {testCaseResults.map((res, i) => {
-              return (
-                <div key={i}>
-                  <div>{res === "True" ? "✅ passed" : "❌ failed"}</div>
-                </div>
-              );
-            })}
-          </div> */}
+            {this.renderRefreshModal()}
             <div className="bg-slate-800 flex h-14 selectLanguage">
               {this.SelectLanguage()}
-              <div>{this.SelectTheme()}</div>
-              <div className="float-right mr-5 pt-3 space-x-2 justify-right justify-items-center">
+
+              {/* SelectTheme unfinished */}
+              {/* {this.SelectTheme()} */}
+              <h3 className="text-2xl text-white font-bold mx-36 mt-2 text-center">
+                Code Editor
+              </h3>
+              <div className="float-right ml-16 pt-[10px] space-x-2 justify-right justify-items-center">
                 <button
                   type="button"
-                  data-mdb-ripple="true"
+                  data-mdb-ripple="false"
                   data-mdb-ripple-color="light"
-                  onClick={() => {
-                    this.setState({ code: "" });
-                  }}
-                  className="px-4 pt-2.5 pb-2 bg-blue-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out flex align-center"
+                  className="px-4 pt-2.5 pb-2 bg-blue-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-600 focus:shadow-lg focus:outline-none focus:ring-0  transition duration-150 ease-in-out flex align-center"
+                  data-bs-toggle="modal"
+                  data-bs-target="#staticBackdrop"
                 >
                   <RefreshIcon
                     className="h-4 w-4 mr-2 ml-0  text-white "
@@ -725,19 +858,36 @@ class Editor extends PureComponent {
                 extensions={[javascript({ jsx: true })]}
                 onChange={(value, viewUpdate) => {
                   this.setState({ code: value });
-                  // console.log(code);
                 }}
               />
             </div>
             <div className=" bg-slate-800 h-96">
-              {this.renderTestCase()}
+              {this.state.isError === true ? (
+                <div className="text-white">
+                  <h3 className="text-2xl font-bold mb-3 pb-4 text-center">
+                    Console
+                  </h3>
+                  <p>{this.state.error}</p>
+                  <button
+                    type="button"
+                    className="ml-96 my-3 px-4 pt-2.5 pb-2 bg-indigo-500 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-indigo-600 hover:shadow-lg focus:bg-indigo-500 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-indigo-500 active:shadow-lg transition duration-150 ease-in-out flex align-center"
+                    onClick={() => {
+                      this.setState({ isError: false });
+                    }}
+                  >
+                    Clear Console
+                  </button>
+                </div>
+              ) : (
+                this.renderTestCase()
+              )}
               {this.renderModal()}
-              <div className="flex float-right px-4 py-4">
+              <div className="flex float-right px-3 py-1">
                 <button
                   type="button"
                   data-mdb-ripple="true"
                   data-mdb-ripple-color="light"
-                  className=" px-4 pt-2.5 pb-2 bg-blue-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out flex align-center"
+                  className=" px-4 pt-2.5 pb-2 bg-blue-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-600 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-600 active:shadow-lg transition duration-150 ease-in-out flex align-center"
                   onClick={() => {
                     this.btnRun_Click(this.state.code, this.state.selected[0]);
                   }}
@@ -752,7 +902,7 @@ class Editor extends PureComponent {
                   type="button"
                   data-mdb-ripple="true"
                   data-mdb-ripple-color="light"
-                  className="ml-2 px-4 pt-2.5 pb-2 bg-lime-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-lime-700 hover:shadow-lg focus:bg-lime-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-lime-700 active:shadow-lg transition duration-150 ease-in-out flex align-center"
+                  className="ml-2 px-4 pt-2.5 pb-2 bg-lime-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-lime-700 hover:shadow-lg focus:bg-lime-600 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-lime-600 active:shadow-lg transition duration-150 ease-in-out flex align-center"
                   onClick={() => {
                     this.btnSubmit_Click(
                       this.state.code,
@@ -780,50 +930,11 @@ class Editor extends PureComponent {
 
 export default Editor;
 /* Start Helper Methods */
-function renderError(result) {
-  var output = "";
-  if (result.outcome === 11) {
-    output = result.cmpinfo;
-  } else if (result.outcome === 12) {
-    output = result.stderr;
-  } else if (result.outcome === 13) {
-    output = "Time limit exceeded";
-  } else if (result.outcome === 17) {
-    output = "Memory limit exceeded";
-  } else if (result.outcome === 19) {
-    output = "Illegal system call";
-  } else if (result.outcome === 20) {
-    output = "Internal error";
-  } else if (result.outcome === 21) {
-    output = "Server overload";
-  }
-  // document.getElementById("output").innerHTML = output;
-}
-
 function renderConditionIcon(cond) {
   if (cond === "true") {
     return <CheckCircleIcon className="text-green-600 inline h-5 w-5" />;
   } else if (cond === "false") {
     return <ExclamationIcon className="text-red-600 inline h-5 w-5" />;
-  }
-}
-function disabledButton_Run(isDisabled) {
-  if (isDisabled) {
-    document.getElementById("btnRun").disabled = true;
-    document.getElementById("btnRun").value = "  WAITING  ";
-  } else {
-    document.getElementById("btnRun").disabled = false;
-    document.getElementById("btnRun").value = "Chạy thử";
-  }
-}
-
-function disabledButton_Submit(isDisabled) {
-  if (isDisabled) {
-    document.getElementById("btnSubmit").disabled = true;
-    document.getElementById("btnSubmit").value = "  WAITING  ";
-  } else {
-    document.getElementById("btnSubmit").disabled = false;
-    document.getElementById("btnSubmit").value = "Nộp bài";
   }
 }
 /* End Helper Methods */

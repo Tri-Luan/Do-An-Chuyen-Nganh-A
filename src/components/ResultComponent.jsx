@@ -8,7 +8,7 @@ function displayResult() {
   return (
     <>
       <h3 className="mt-3">Câu hỏi: {sessionStorage.getItem("Description")}</h3>
-      <div className="mt-3 " dangerouslySetInnerHTML={displayTestCaseFail()} /> 
+      <div className="mt-3 " dangerouslySetInnerHTML={displayTestCaseFail()} />
       <h1 className="mt-4 text-3xl font-medium text-center text-danger">
         Đạt: {sessionStorage.getItem("Pass")} /
         {sessionStorage.getItem("Total_TestCases")} test cases
@@ -18,42 +18,40 @@ function displayResult() {
 }
 
 function addHistoryResultProcess() {
-  // var role = sessionStorage.getItem("Role");
-    var questionId = sessionStorage.getItem("Question_id");
-    var questionDescription = sessionStorage.getItem("Description");
-    // var studentId = sessionStorage.getItem("Student_Id");
-    var studentId = 1;
-    var pass = String(
-      sessionStorage.getItem("Pass") +
-        "/" +
-        sessionStorage.getItem("Total_TestCases")
-    );
-    var testCaseFail = String(renderTestCaseFail());
-    var sourceCode = sessionStorage.getItem("SourceCode");
-    var today = new Date();
-    var date =
-      today.getFullYear() +
-      "-" +
-      (today.getMonth() + 1) +
-      "-" +
-      today.getDate() +
-      " " +
-      today.getHours() +
-      ":" +
-      today.getMinutes() +
-      ":" +
-      today.getSeconds();
-    var param = {
-      Question_id: questionId,
-      question_description: questionDescription,
-      Student_id: studentId,
-      Pass: pass,
-      Testcase_fail: testCaseFail,
-      Source_code: sourceCode,
-      Submit_date: date,
-    };
-    console.log(param);
-    postHistoryResult(param);
+  var questionId = sessionStorage.getItem("Question_id");
+  var questionDescription = sessionStorage.getItem("Description");
+  var studentId = sessionStorage.getItem("Student_Id");
+  var pass = String(
+    sessionStorage.getItem("Pass") +
+      "/" +
+      sessionStorage.getItem("Total_TestCases")
+  );
+  var testCaseFail = String(renderTestCaseFail());
+  var sourceCode = sessionStorage.getItem("SourceCode");
+  var today = new Date();
+  var date =
+    today.getFullYear() +
+    "-" +
+    (today.getMonth() + 1) +
+    "-" +
+    today.getDate() +
+    " " +
+    today.getHours() +
+    ":" +
+    today.getMinutes() +
+    ":" +
+    today.getSeconds();
+  var param = {
+    Question_id: questionId,
+    question_description: questionDescription,
+    Student_id: studentId,
+    Pass: pass,
+    Testcase_fail: testCaseFail,
+    Languages: String(sessionStorage.getItem("Languages")),
+    Source_code: sourceCode,
+    Submit_date: date,
+  };
+  postHistoryResult(param);
 }
 
 function postHistoryResult(param) {
@@ -78,15 +76,18 @@ function renderTestCaseFail() {
 }
 
 function displayTestCaseFail() {
-  var temp = sessionStorage.getItem("Total_TestCases") - sessionStorage.getItem("Pass");
-  let content=``;
-    if (temp !== 0) {
-        for (var i = 0; i <temp; i++) {
-            var name = String("Fail" + i);
-            content+=`<h2 className="text-red-600">Testcase false ${i+1}</h2><p>${sessionStorage.getItem(name)}</p>`;
-        }
+  var temp =
+    sessionStorage.getItem("Total_TestCases") - sessionStorage.getItem("Pass");
+  let content = ``;
+  if (temp !== 0) {
+    for (var i = 0; i < temp; i++) {
+      var name = String("Fail" + i);
+      content += `<h2 className="text-red-600">Testcase false ${
+        i + 1
+      }</h2><p>${sessionStorage.getItem(name)}</p>`;
     }
-  return {__html:content};
+  }
+  return { __html: content };
 }
 
 function clearSessionStorage() {
@@ -101,7 +102,9 @@ function clearSessionStorage() {
 }
 
 const Result = () => {
-  addHistoryResultProcess()
+  const handleSave = () => {
+    addHistoryResultProcess();
+  }
   return (
     <div class="container mt-5 mb-24">
       <img
@@ -117,13 +120,23 @@ const Result = () => {
           action=""
           className="col-8 bg-gray-100 p-5 border border-primary rounded"
         >
-          <h1 className="text-center text-3xl text-blue-500  text-uppercase">Kết quả</h1>
+          <h1 className="text-center text-3xl text-blue-500  text-uppercase">
+            Kết quả
+          </h1>
           {displayResult()}
           <Link to="/practice">
             <button className="btn btn-primary btn-lg btn-block mt-5">
               Quay lại luyện tập
             </button>
           </Link>
+          {sessionStorage.getItem("Role") === "Student" ? (
+            <button
+              className="btn bg-lime-600 btn-lg btn-block mt-5"
+              onClick={() => handleSave()}
+            >
+              Lưu lịch sử làm bài
+            </button>
+          ) : null}
         </form>
       </div>
     </div>

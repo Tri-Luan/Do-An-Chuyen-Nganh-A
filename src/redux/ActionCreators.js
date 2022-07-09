@@ -1,7 +1,7 @@
 import * as ActionTypes from './ActionTypes';
 import { baseUrl } from '../shared/baseUrl';
 
-// dishes
+// Exercises
 export const fetchExercises = () => (dispatch) => {
   dispatch(exercisesLoading(true));
   return fetch(baseUrl + 'questions/getlist')

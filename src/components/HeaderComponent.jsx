@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
-import { NavLink, Link, Router, useNavigate } from "react-router-dom";
+import { NavLink, Link,useNavigate } from "react-router-dom";
 import { FingerPrintIcon } from "@heroicons/react/solid";
-import {
-  RefreshIcon,
-  SaveIcon,
-  SaveAsIcon,
-  ChevronDoubleRightIcon,
-} from "@heroicons/react/outline";
-import { useAuth } from "./auth";
 
 const HeaderComponent = () => {
-  let activeStyle = {
-    textDecoration: "underline",
-  };
+
+  // Active navbar
+  // let activeStyle = {
+  //   textDecoration: "underline",
+  // };
+
   let normalStyle =
     "nav-link text-white px-3 py-2 rounded-md text-base font-medium";
   let activeClassName =
@@ -23,11 +19,10 @@ const HeaderComponent = () => {
     sessionStorage.getItem("Access_token")
   );
   const role = sessionStorage.getItem("Role");
-  const auth = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    sessionStorage.removeItem("Access_token");
+    sessionStorage.clear();
     navigate("/");
     setIsLogin(false);
   };
@@ -151,14 +146,16 @@ const HeaderComponent = () => {
                         {sessionStorage.getItem("Student_FullName")}
                       </span>
                     </li>
-                    <li>
-                      <Link
-                        to="/history"
-                        className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
-                      >
-                        Lịch sử nộp bài
-                      </Link>
-                    </li>
+                    {sessionStorage.getItem("Role") === "Student" ? (
+                      <li>
+                        <Link
+                          to="/history"
+                          className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                        >
+                          Lịch sử nộp bài
+                        </Link>
+                      </li>
+                    ) : null}
 
                     <li>
                       <button

@@ -1,22 +1,17 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { Component } from "react";
 import img2 from "../assets/images/img2.jpg";
 import img4 from "../assets/images/img4.jpg";
 import img5 from "../assets/images/img5.jpg";
 import img6 from "../assets/images/img6.jpg";
-// redux
-import { connect } from "react-redux";
+
 import { Link } from "react-router-dom";
-import { fetchExercises } from "../redux/ActionCreators";
+
 
 class ExerciseListComponent extends Component {
-  sendData = (data) => {
-    console.log(data);
-    this.props.mainCallback(data);
-  };
   handleClick(data) {
     sessionStorage.setItem("Question_id", data.Question_id);
     sessionStorage.setItem("Question_description", data.Description);
-    this.props.mainCallback(data);
   }
   handlePagination() {
     return (
@@ -25,7 +20,7 @@ class ExerciseListComponent extends Component {
           <ul className="flex list-style-none">
             <li className="page-item disabled">
               <a
-                className="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-500 pointer-events-none focus:shadow-none"
+                className="page-link relative block py-1.5 px-3  border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-500 pointer-events-none focus:shadow-none"
                 href="#"
                 tabIndex={-1}
                 aria-disabled="true"
@@ -35,7 +30,7 @@ class ExerciseListComponent extends Component {
             </li>
             <li className="page-item active">
               <a
-                className="page-link relative block py-1.5 px-3 rounded border-0 bg-blue-600 outline-none transition-all duration-300 rounded text-white hover:text-white hover:bg-blue-600 shadow-md focus:shadow-md"
+                className="page-link relative block py-1.5 px-3  border-0 bg-blue-600 outline-none transition-all duration-300 rounded text-white hover:text-white hover:bg-blue-600 shadow-md focus:shadow-md"
                 href="#"
               >
                 1 <span className="visually-hidden">(current)</span>
@@ -43,7 +38,7 @@ class ExerciseListComponent extends Component {
             </li>
             <li className="page-item">
               <a
-                className="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                className="page-link relative block py-1.5 px-3  border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
                 href="#"
               >
                 2
@@ -51,7 +46,7 @@ class ExerciseListComponent extends Component {
             </li>
             <li className="page-item">
               <a
-                className="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                className="page-link relative block py-1.5 px-3  border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
                 href="#"
               >
                 3
@@ -59,7 +54,7 @@ class ExerciseListComponent extends Component {
             </li>
             <li className="page-item">
               <a
-                className="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                className="page-link relative block py-1.5 px-3  border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
                 href="#"
               >
                 Next

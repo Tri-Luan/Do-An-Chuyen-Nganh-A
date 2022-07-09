@@ -1,16 +1,25 @@
 import { Component } from "react";
 import { baseUrl } from "../shared/baseUrl";
 import axios from "axios";
+import { Navigate } from "react-router-dom";
 
 class History extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { content: [], navigate: false,href:"#"};
   }
-  // componentDidMount() {
-  //   this.getHistory();
-  // }
+  componentDidMount() {
+    this.getHistory();
+  }
+  handleButton(Source_code,Question_id,Description) {
+    let href='/editor/'+Question_id;
+    sessionStorage.setItem("Source_code", Source_code)
+    this.setState({ navigate: true,href:href });
+    sessionStorage.setItem("Question_id", Question_id);
+    sessionStorage.setItem("Question_description",Description);
+  }
   getHistory() {
+    this.setState({ content: [] });
     axios
       .get(
         baseUrl +
@@ -19,36 +28,41 @@ class History extends Component {
       )
       .then((response) => {
         var data = response.data;
-        return this.renderHistory(data);
+        this.renderHistory(data);
       });
   }
   renderHistory(data) {
     var content = [];
     for (let i = 0; i < data.length; i++) {
       content.push(
-        <tr class="align-middle alert border-bottom" role="alert">
-          <td>{i}</td>
-          <td>
-            <div>{data[i].Question_description}</div>
+        <tr class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            {i + 1}
           </td>
-          <td>
-            <div class="fw-600">
-              {this.renderCreateDate(data[i].Submit_date)}
-            </div>
+          <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+            {data[i].Question_description}
           </td>
-          <td>{data[i].Source_code}</td>
-          <td>{data[i].Pass}</td>
-          <td>{this.renderTestCaseFail(data[i].Testcase_fail)}</td>
+          <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+            {this.renderCreateDate(data[i].Submit_date)}
+          </td>
+          <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+            <button
+              className="text-[#5089eb]"
+              onClick={() => this.handleButton(data[i].Source_code,data[i].Question_id,data[i].Question_description)}
+            >
+              Xem chi tiết
+            </button>
+          </td>
+          <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+            {data[i].Pass}
+          </td>
+          <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+            {this.renderTestCaseFail(data[i].Testcase_fail)}
+          </td>
         </tr>
       );
     }
-    return content;
-  }
-  renderTestCaseFail(data) {
-    if (data == "") {
-      return String("Không có lỗi");
-    }
-    return data;
+    this.setState({ content: content });
   }
   renderCreateDate(createDate) {
     return String(
@@ -61,103 +75,69 @@ class History extends Component {
         createDate.slice(11, 19)
     );
   }
+  renderTestCaseFail(data) {
+    if (data === "") {
+      return String("Không có lỗi");
+    }
+    return data;
+  }
   render() {
     return (
       <div class="container mt-5">
-        <div class="table-wrap">
-          <table class="table table-responsive table-borderless">
-            <thead>
-              <th>STT</th>
-              <th>&nbsp;</th>
-              <th>Tên bài</th>
-              <th>Thời gian nộp</th>
-              <th>Source code</th>
-              <th>Kiểm thử</th>
-              <th>Testcase lỗi</th>
-            </thead>
-            <tbody id="table">
-              {/* <tr class="align-middle alert border-bottom" role="alert">
-                <td>1</td>
-                <td class="text-center"></td>
-                <td>
-                  <div>Tính tổng a+b</div>
-                </td>
-                <td>
-                  <div class="fw-600">03/07/2022</div>
-                </td>
-                <td>
-                  <button className="text-[#5089eb]">Xem chi tiết</button>
-                </td>
-                <td>10/10</td>
-                <td>Không có Testcase lỗi</td>
-              </tr>
-              <tr class="align-middle alert border-bottom" role="alert">
-                <td>2</td>
-                <td class="text-center"></td>
-                <td>
-                  <div>Tìm hiệu a-b</div>
-                </td>
-                <td>
-                  <div class="fw-600">02/07/2022</div>
-                </td>
-                <td>
-                  <button className="text-[#5089eb]">Xem chi tiết</button>
-                </td>
-                <td>10/10</td>
-                <td>Không có Testcase lỗi</td>
-              </tr>
-              <tr class="align-middle alert border-bottom" role="alert">
-                <td>3</td>
-                <td class="text-center"></td>
-                <td>
-                  <div>Tìm tích a*b</div>
-                </td>
-                <td>
-                  <div class="fw-600">02/07/2022</div>
-                </td>
-                <td>
-                  <button className="text-[#5089eb]">Xem chi tiết</button>
-                </td>
-                <td>10/10</td>
-                <td>Không có Testcase lỗi</td>
-              </tr>
-              <tr class="align-middle alert border-bottom" role="alert">
-                <td>4</td>
-                <td class="text-center"></td>
-                <td>
-                  <div>Tìm thương a/b</div>
-                </td>
-                <td>
-                  <div class="fw-600">03/07/2022</div>
-                </td>
-                <td>
-                  <button className="text-[#5089eb]">Xem chi tiết</button>
-                </td>
-                <td>10/10</td>
-                <td>Không có Testcase lỗi</td>
-              </tr>
-              <tr class="align-middle alert border-bottom" role="alert">
-                <td>5</td>
-                <td class="text-center"></td>
-                <td>
-                  <div>Tìm 5 số nguyên tố đầu tiên</div>
-                </td>
-                <td>
-                  <div class="fw-600">03/07/2022</div>
-                </td>
-                <td>
-                  <button className="text-[#5089eb]">Xem chi tiết</button>
-                </td>
-                <td>10/10</td>
-                <td>Không có Testcase lỗi</td>
-              </tr> */}
-              {this.getHistory()}
-            </tbody>
-          </table>
+        {this.state.navigate?<Navigate to={this.state.href} replace={true} />:null}
+        <div class="flex flex-col">
+          <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+              <div class="overflow-hidden">
+                <table class="min-w-full">
+                  <thead class="bg-white border-b">
+                    <tr>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        STT
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        Tên bài
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        Thời gian nộp
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        Source code
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        Kiểm thử
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
+                      >
+                        Testcase lỗi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="table">{this.state.content}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 }
-
 export default History;

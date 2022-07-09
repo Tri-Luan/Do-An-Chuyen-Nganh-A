@@ -1,3 +1,4 @@
+// Exercises
 export const EXERCISES_LOADING = 'EXERCISES_LOADING';
 export const ADD_EXERCISES = 'ADD_EXERCISES';
 export const ADD_EXERCISE = 'ADD_EXERCISE';

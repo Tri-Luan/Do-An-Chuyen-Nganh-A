@@ -6,7 +6,7 @@ import avatar3 from "../assets/images/avatar3.jpg";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const [isLogin, setIsLogin] = useState(sessionStorage.getItem("Access_token"));
+  const [isLogin] = useState(sessionStorage.getItem("Access_token"));
   const navigate=useNavigate();
 
   const handleButton=()=>{
