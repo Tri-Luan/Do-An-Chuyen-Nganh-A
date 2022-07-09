@@ -1,5 +1,8 @@
 import React, { Component } from "react";
-
+import img2 from "../assets/images/img2.jpg";
+import img4 from "../assets/images/img4.jpg";
+import img5 from "../assets/images/img5.jpg";
+import img6 from "../assets/images/img6.jpg";
 // redux
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -32,7 +35,6 @@ class ExerciseListComponent extends Component {
             </li>
             <li className="page-item active">
               <a
-                
                 className="page-link relative block py-1.5 px-3 rounded border-0 bg-blue-600 outline-none transition-all duration-300 rounded text-white hover:text-white hover:bg-blue-600 shadow-md focus:shadow-md"
                 href="#"
               >
@@ -69,55 +71,73 @@ class ExerciseListComponent extends Component {
     );
   }
   render() {
-    const exercisesList = this.props.exercises.exercises.map((exercise) => {
-      var href = "/editor/" + exercise.Question_id;
-      return (
-        <div className="mb-6 lg:mb-0">
-          <div className="relative w-72 h-[30rem] block bg-white rounded-lg shadow-lg">
-            <div className="flex">
-              <div
-                className="relative overflow-hidden bg-no-repeat bg-cover shadow-lg rounded-lg mx-4 -mt-4"
-                data-mdb-ripple="true"
-                data-mdb-ripple-color="light"
-              >
-                <img
-                  src="https://bizflyportal.mediacdn.vn/thumb_wm/1000,100/bizflyportal/images/cod16174155365053.jpeg"
-                  className="w-full"
-                  alt=""
-                />
-                <a href="#!">
-                  <div
+    const exercisesList = this.props.exercises.exercises.map(
+      (exercise, idx) => {
+        var href = "/editor/" + exercise.Question_id;
+        return (
+          <div className="mb-10">
+            <div className="relative w-72 h-[30rem] block bg-white rounded-lg shadow-lg">
+              <div className="flex">
+                <div
+                  className="relative overflow-hidden bg-no-repeat bg-cover shadow-lg rounded-lg mx-4 -mt-4"
+                  data-mdb-ripple="true"
+                  data-mdb-ripple-color="light"
+                >
+                  {idx % 4 === 0 ? (
+                    <img
+                      src="https://bizflyportal.mediacdn.vn/thumb_wm/1000,100/bizflyportal/images/cod16174155365053.jpeg"
+                      className="w-[1000px]"
+                      alt=""
+                    />
+                  ) : idx % 4 === 1 ? (
+                    <img src={img5} className="w-[1000px] h-[140px]" alt="" />
+                  ) : idx % 4 === 2 ? (
+                    <img src={img4} className="w-[1000px] h-[140px]" alt="" />
+                  ) : (
+                    <img src={img6} className="w-[1000px] h-[140px]" alt="" />
+                  )}
+
+                  <Link
+                    to={{
+                      pathname: `${href}`,
+                    }}
                     className="absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed opacity-0 hover:opacity-100 transition duration-300 ease-in-out"
                     style={{
                       backgroundColor: "rgba(251, 251, 251, 0.15)",
                     }}
-                  />
-                </a>
+                    onClick={() => {
+                      this.handleClick(exercise);
+                    }}
+                  ></Link>
+                </div>
+              </div>
+              <div className="p-6 relative">
+                <h5 className="font-bold text-lg mb-3 text-center">{exercise.Title}</h5>
+                <p className="mb-2">{exercise.Description}</p>
+                <p className="mb-1">Level: {exercise.Level}</p>
+                <p className="mb-1">Topic: {exercise.Topic}</p>
+                <Link
+                  to={{
+                    pathname: `${href}`,
+                  }}
+                  className="inline-block absolute left-24 top-64 px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+                  onClick={() => {
+                    this.handleClick(exercise);
+                  }}
+                >
+                  Làm Bài
+                </Link>
               </div>
             </div>
-            <div className="p-6 relative">
-              <h5 className="font-bold text-lg mb-3">{exercise.Title}</h5>
-              <p className="mb-4 pb-2">{exercise.Description}</p>
-              <Link
-                to={{
-                  pathname: `${href}`,
-                }}
-                className="inline-block absolute left-24 top-64 px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
-                onClick={() => {
-                  this.handleClick(exercise);
-                }}
-              >
-                Làm Bài
-              </Link>
-            </div>
           </div>
-        </div>
-      );
-    });
+        );
+      }
+    );
     return (
       <div>
-        <div className="container my-24 px-6 mx-auto">
-          <section className="mb-32 text-gray-800 text-center">
+        <div className="container my-4 px-6 mx-auto">
+          <img src={img2} className="w-full h-52 mb-3" alt="" />
+          <section className="mb-32 text-gray-800">
             <h2 className="text-3xl font-bold mb-12 pb-4 text-center">
               Danh sách bài tập
             </h2>

@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import { Route, Router, Switch, Routes } from "react-router-dom";
-
-// import Dishdetail from "./DishdetailComponent";
+import { Route, Routes, Redirect, useHistory } from "react-router-dom";
 
 // redux
 import { connect } from "react-redux";
 import { addExercises, fetchExercises } from "../redux/ActionCreators";
+
 import Header from "./HeaderComponent";
 import ExerciseListComponent from "./ExerciseListComponent";
 import Home from "./HomeComponent";
@@ -13,6 +12,10 @@ import Editor from "./EditorComponent";
 import Footer from "./FooterComponent";
 import Post from "./PostComponent";
 import History from "./HistoryComponent";
+import Result from "./ResultComponent";
+import Login from "./LoginComponent";
+import Register from "./RegisterComponent";
+import { AuthProvider } from "./auth";
 
 const mapStateToProps = (state) => {
   return {
@@ -57,17 +60,12 @@ class Main extends Component {
         Title: "",
         Topic: "",
       },
+      Access_token: sessionStorage.getItem("Access_token"),
     };
   }
   componentDidMount() {
     this.props.fetchExercises();
   }
-  callbackFunction = (childData) => {
-    this.setState({ data: childData[0] });
-    console.log(childData);
-    console.log(this.state.data);
-  };
-
   render() {
     const HomePage = () => {
       return (
@@ -82,10 +80,7 @@ class Main extends Component {
       return (
         <div>
           <Header />
-          <ExerciseListComponent
-            exercises={this.props.exercises}
-            mainCallback={this.callbackFunction}
-          />
+          <ExerciseListComponent exercises={this.props.exercises} />
           <Footer />
         </div>
       );
@@ -107,41 +102,53 @@ class Main extends Component {
         <div>
           <Header />
           <History />
-          {/* <Footer /> */}
+          <Footer />
         </div>
       );
     };
-    // <Home
-    // dish={this.props.dishes.dishes.filter((dish) => dish.featured === true)[0]}
-    // dishesLoading={this.props.dishes.isLoading}
-    // dishesErrMess={this.props.dishes.errMess}
-    // promotion={this.props.promotions.promotions.filter((promo) => promo.featured === true)[0]}
-    // promoLoading={this.props.promotions.isLoading}
-    // promoErrMess={this.props.promotions.errMess}
-    // leader={this.props.leaders.filter((leader) => leader.featured === true)[0]} />
-
-    // const DishdetailPage = ({ match }) => {
-    //   const dishId = parseInt(match.params.dishId);
-    //   return (
-    //     <Dishdetail
-    //       dish={this.props.dishes.dishes[dishId]}
-    //       isLoading={this.props.dishes.isLoading}
-    //       errMess={this.props.dishes.errMess}
-    //       comments={this.props.comments.comments.filter((comment) => comment.dishId === dishId)}
-    //       addComment={this.props.addComment}
-    //       commentsErrMess={this.props.comments.errMess} />
-    //   );
-    // }
+    const ResultPage = () => {
+      return (
+        <div>
+          <Header />
+          <Result />
+          <Footer />
+        </div>
+      );
+    };
+    const LoginPage = () => {
+      return (
+        <div>
+          {/* <Header />
+          <Result />
+          <Footer /> */}
+          <Login />
+        </div>
+      );
+    };
+    const RegisterPage = () => {
+      return (
+        <div>
+          {/* <Header />
+          <Result />
+          <Footer /> */}
+          <Register />
+        </div>
+      );
+    };
     return (
       <div>
-        <Routes>
-          <Route path="/" element={<HomePage />}></Route>
-          <Route path="/practice" element={<PracticePage />}></Route>
-          <Route path="/post" element={<PostPage />}></Route>
-          <Route path="/history" element={<HistoryPage />}></Route>
-          <Route path="/editor/:exerciseID" element={<EditorPage />}></Route>
-        </Routes>
-        {/* <Footer /> */}
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />}></Route>
+            <Route path="/practice" element={<PracticePage />}></Route>
+            <Route path="/post" element={<PostPage />}></Route>
+            <Route path="/history" element={<HistoryPage />}></Route>
+            <Route path="/result" element={<ResultPage />}></Route>
+            <Route path="/login" element={<LoginPage />}></Route>
+            <Route path="/register" element={<RegisterPage />}></Route>
+            <Route path="/editor/:exerciseID" element={<EditorPage />}></Route>
+          </Routes>
+        </AuthProvider>
       </div>
     );
   }

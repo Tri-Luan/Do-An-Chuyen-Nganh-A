@@ -1,17 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import "../style/home.css";
 import avatar1 from "../assets/images/avatar1.jpg";
 import avatar2 from "../assets/images/avatar2.jpg";
 import avatar3 from "../assets/images/avatar3.jpg";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const [isLogin, setIsLogin] = useState(sessionStorage.getItem("Access_token"));
+  const navigate=useNavigate();
+
+  const handleButton=()=>{
+    if (isLogin)
+    navigate('/practice')
+    else navigate('/login')
+  }
   return (
     <div>
       <section className="udeCarousel">
         <div className="carousel__content">
           <h1>Luyện tập theo lịch của bạn</h1>
           <p>Luyện tập bất kỳ chủ đề, bất cứ lúc nào.</p>
-          <button class="btnRed mt-3 ml-20">Bắt đầu ngay!</button>
+          <button class="btnRed mt-3 ml-20" onClick={()=>{handleButton()}}>Bắt đầu ngay!</button>
         </div>
       </section>
       {/* Intro start */}
@@ -116,7 +125,7 @@ const Home = () => {
             <div class="banner_title ">
               <h3>Nâng cao kỹ năng lập trình của bạn</h3>
               <p>Đăng ký tài khoản và bắt đầu ngay hôm nay!</p>
-              <button class="btnRed">Bắt đầu ngay!</button>
+              <button class="btnRed" onClick={()=>{handleButton()}}>Bắt đầu ngay!</button>
             </div>
             <div class="col-sm-auto banner__item">
               <i class="fa fa-cat"></i>

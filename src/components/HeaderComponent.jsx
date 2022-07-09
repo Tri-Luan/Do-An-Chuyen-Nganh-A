@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
-import { NavLink, Link, Router } from "react-router-dom";
+import { NavLink, Link, Router, useNavigate } from "react-router-dom";
 import { FingerPrintIcon } from "@heroicons/react/solid";
 import {
   RefreshIcon,
@@ -8,6 +8,7 @@ import {
   SaveAsIcon,
   ChevronDoubleRightIcon,
 } from "@heroicons/react/outline";
+import { useAuth } from "./auth";
 
 const HeaderComponent = () => {
   let activeStyle = {
@@ -18,6 +19,18 @@ const HeaderComponent = () => {
   let activeClassName =
     "nav-link hover:normal-case border-b-2 border-[#5089eb] text-[#5089eb] px-3 py-2 text-base font-medium";
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogin, setIsLogin] = useState(
+    sessionStorage.getItem("Access_token")
+  );
+  const role = sessionStorage.getItem("Role");
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("Access_token");
+    navigate("/");
+    setIsLogin(false);
+  };
   return (
     <div>
       <nav className="bg-gray-800">
@@ -50,14 +63,16 @@ const HeaderComponent = () => {
                   >
                     Luyện tập
                   </NavLink>
-                  <NavLink
-                    to="/post"
-                    className={({ isActive }) =>
-                      isActive ? activeClassName : normalStyle
-                    }
-                  >
-                    Đăng bài
-                  </NavLink>
+                  {role === "Author" ? (
+                    <NavLink
+                      to="/post"
+                      className={({ isActive }) =>
+                        isActive ? activeClassName : normalStyle
+                      }
+                    >
+                      Đăng bài
+                    </NavLink>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -109,45 +124,65 @@ const HeaderComponent = () => {
             </div>
             {/* Reponsive navbar end*/}
             {/* Right elements start */}
-            <div class="flex items-center relative">
-              <div className="dropdown relative">
-                <a
-                  className="dropdown-toggle flex items-center hidden-arrow"
-                  href="/"
-                  id="dropdownMenuButton2"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <img
-                    src="https://mdbootstrap.com/img/new/avatars/2.jpg"
-                    className="rounded-full h-12 w-12 height: 25px; width: 25px"
-                    alt=""
-                  />
-                </a>
-                <ul
-                  className="dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-3s m-0 bg-clip-padding border-none left-auto right-0"
-                  aria-labelledby="dropdownMenuButton2"
-                >
-                  <li>
-                    <Link
-                      to="/history"
-                      className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
-                    >
-                      Lịch sử nộp bài
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/logout"
-                      className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
-                    >
-                      Đăng xuất
-                    </Link>
-                  </li>
-                </ul>
+            {isLogin ? (
+              <div class="flex items-center relative">
+                <div className="dropdown relative">
+                  <a
+                    className="dropdown-toggle flex items-center hidden-arrow"
+                    href="/"
+                    id="dropdownMenuButton2"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <img
+                      src="https://mdbootstrap.com/img/new/avatars/2.jpg"
+                      className="rounded-full h-12 w-12 height: 25px; width: 25px"
+                      alt=""
+                    />
+                  </a>
+                  <ul
+                    className="dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-3s m-0 bg-clip-padding border-none left-auto right-0"
+                    aria-labelledby="dropdownMenuButton2"
+                  >
+                    <li className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100">
+                      Xin chào{" "}
+                      <span className="text-blue-600">
+                        {sessionStorage.getItem("Student_FullName")}
+                      </span>
+                    </li>
+                    <li>
+                      <Link
+                        to="/history"
+                        className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                      >
+                        Lịch sử nộp bài
+                      </Link>
+                    </li>
+
+                    <li>
+                      <button
+                        onClick={() => handleLogout()}
+                        className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                      >
+                        Đăng xuất
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
+            ) : (
+              <Link to="/login">
+                <button
+                  type="button"
+                  class="inline-block px-6 py-2.5 bg-blue-500 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-600 hover:shadow-lg focus:bg-blue-600 focus:shadow-lg focus:outline-none focus:ring-0  transition duration-150 ease-in-out"
+                  data-bs-dismiss="modal"
+                >
+                  Đăng nhập
+                </button>
+              </Link>
+            )}
+
             {/* Right elements end */}
           </div>
         </div>

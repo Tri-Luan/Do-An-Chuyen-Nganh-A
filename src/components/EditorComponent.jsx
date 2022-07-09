@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, Fragment, Component } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  Fragment,
+  Component,
+  PureComponent,
+} from "react";
 import { useCodeMirror } from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import React from "react";
@@ -25,18 +32,24 @@ import { StreamLanguage } from "@codemirror/stream-parser";
 import { go } from "@codemirror/legacy-modes/mode/go";
 import Split from "react-split";
 import { Link, useLocation } from "react-router-dom";
+import { serverUrl, baseUrl } from "../shared/baseUrl";
+import ReactDOM from "react-dom";
 
-// import CollapseButton from "./buttons/CollapseButton.jsx"
-
-const URI1 = "http://128.199.172.148:4000/jobe/index.php/restapi/";
-const URI2 = "http://104.248.145.103:4000/";
-
-class Editor extends Component {
+class Editor extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      count: 0,
       languages: [{}],
+      sampleTestCases: [
+        {
+          ID: Number,
+          Question_id: Number,
+          Input: String,
+          Output: String,
+          accurate: String,
+          output: String,
+        },
+      ],
       testCases: [
         {
           ID: Number,
@@ -47,7 +60,7 @@ class Editor extends Component {
           output: String,
         },
       ],
-      result: [{ accurate: String, output: String }],
+      result: [{ accurate: String, input: String, output: String }],
       code: `#include <stdio.h>
       int main(){
         int a,b;
@@ -59,6 +72,7 @@ class Editor extends Component {
       Question_id: sessionStorage.getItem("Question_id"),
       Question: [],
       selected: [],
+      isShowing: false,
     };
   }
 
@@ -68,22 +82,33 @@ class Editor extends Component {
   // componentWillMount() {
 
   // }
-  componentDidMount() {
-    this.getLanguages();
-    this.getTestCases(this.state.Question_id);
+  async componentDidMount() {
+    await this.getLanguages();
+    await this.getSampleTestCases(this.state.Question_id);
+    await this.getTestCases(this.state.Question_id);
     var question = this.props.exercises.exercises.filter((exercise) => {
       // eslint-disable-next-line eqeqeq
       return exercise.Question_id == this.state.Question_id;
     });
     this.setState({ Question: question[0] });
   }
-  getTestCases = (Question_id) => {
-    console.log("Question_id", Question_id);
-    axios
-      .get(URI2 + "sampletestcases/getlistbyquestionid/" + Question_id)
+  getSampleTestCases = async (Question_id) => {
+    await axios
+      .get(baseUrl + "sampleTestCases/getlistbyquestionid/" + Question_id)
       .then((response) => {
-        this.setState({ testCases: response.data });
-      });
+        let sampleTestCases = response.data;
+        this.setState({ sampleTestCases });
+      })
+      .catch((error) => console.log(error));
+  };
+  getTestCases = async (Question_id) => {
+    await axios
+      .get(baseUrl + "testcases/getlistbyquestionid/" + Question_id)
+      .then((response) => {
+        let testCases = response.data;
+        this.setState({ testCases });
+      })
+      .catch((error) => console.log(error));
   };
   renderTestCase() {
     return (
@@ -93,7 +118,7 @@ class Editor extends Component {
           id="pills-tabVertical"
           role="tablist"
         >
-          {this.state.testCases.map((testCases, Idx) => (
+          {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
             <>
               {Idx === 0 ? (
                 <li
@@ -102,7 +127,7 @@ class Editor extends Component {
                   role="presentation"
                 >
                   <a
-                    href={`#pills-` + testCases.ID}
+                    href={`#pills-` + sampleTestCases.ID}
                     class="
                           nav-link
                           block
@@ -116,14 +141,15 @@ class Editor extends Component {
                           focus:outline-none focus:ring-0
                           active
                         "
-                    id={`pills-` + testCases.ID + `-tabVertical`}
+                    id={`pills-` + sampleTestCases.ID + `-tabVertical`}
                     data-bs-toggle="pill"
-                    data-bs-target={`#pills-` + testCases.ID + `Vertical`}
+                    data-bs-target={`#pills-` + sampleTestCases.ID + `Vertical`}
                     role="tab"
-                    aria-controls={`pills-` + testCases.ID + `Vertical`}
+                    aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
                     aria-selected="true"
                   >
-                    Kiểm thử {Idx + 1} {renderConditionIcon(testCases.accurate)}
+                    Kiểm thử {Idx + 1}{" "}
+                    {renderConditionIcon(sampleTestCases.accurate)}
                   </a>
                 </li>
               ) : (
@@ -133,7 +159,7 @@ class Editor extends Component {
                   role="presentation"
                 >
                   <a
-                    href={`#pills-` + testCases.ID}
+                    href={`#pills-` + sampleTestCases.ID}
                     class="
                           nav-link
                           block
@@ -146,14 +172,15 @@ class Editor extends Component {
                           h-10
                           focus:outline-none focus:ring-0
                         "
-                    id={`pills-` + testCases.ID + `-tabVertical`}
+                    id={`pills-` + sampleTestCases.ID + `-tabVertical`}
                     data-bs-toggle="pill"
-                    data-bs-target={`#pills-` + testCases.ID + `Vertical`}
+                    data-bs-target={`#pills-` + sampleTestCases.ID + `Vertical`}
                     role="tab"
-                    aria-controls={`pills-` + testCases.ID + `Vertical`}
+                    aria-controls={`pills-` + sampleTestCases.ID + `Vertical`}
                     aria-selected="false"
                   >
-                    Kiểm thử {Idx + 1} {renderConditionIcon(testCases.accurate)}
+                    Kiểm thử {Idx + 1}{" "}
+                    {renderConditionIcon(sampleTestCases.accurate)}
                   </a>
                 </li>
               )}
@@ -161,41 +188,45 @@ class Editor extends Component {
           ))}
         </ul>
         <div class="tab-content" id="pills-tabContentVertical">
-          {this.state.testCases.map((testCases, Idx) => (
+          {this.state.sampleTestCases.map((sampleTestCases, Idx) => (
             <>
               {Idx === 0 ? (
                 <div
                   key={Idx}
                   class="tab-pane fade show active text-white"
-                  id={`pills-` + testCases.ID + `Vertical`}
+                  id={`pills-` + sampleTestCases.ID + `Vertical`}
                   role="tabpanel"
-                  aria-labelledby={`pills-` + testCases.ID + `-tabVertical`}
+                  aria-labelledby={
+                    `pills-` + sampleTestCases.ID + `-tabVertical`
+                  }
                 >
-                  <h1>Đầu vào: {testCases.Input}</h1>
+                  <h1>Đầu vào: {sampleTestCases.Input}</h1>
                   <h1>
-                    Đầu ra thực tế: {testCases.output}
+                    Đầu ra thực tế: {sampleTestCases.output}
                     {/* {this.state.result.length > 0
                       ? this.state.result[Idx].output
                       : "null"} */}
                   </h1>
-                  <h1>Đầu ra mong muốn: {testCases.Output}</h1>
+                  <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
                 </div>
               ) : (
                 <div
                   key={Idx}
                   class="tab-pane fade text-white"
-                  id={`pills-` + testCases.ID + `Vertical`}
+                  id={`pills-` + sampleTestCases.ID + `Vertical`}
                   role="tabpanel"
-                  aria-labelledby={`pills-` + testCases.ID + `-tabVertical`}
+                  aria-labelledby={
+                    `pills-` + sampleTestCases.ID + `-tabVertical`
+                  }
                 >
-                  <h1>Đầu vào: {testCases.Input}</h1>
+                  <h1>Đầu vào: {sampleTestCases.Input}</h1>
                   <h1>
-                    Đầu ra thực tế: {testCases.output}
+                    Đầu ra thực tế: {sampleTestCases.output}
                     {/* {this.state.result.length > 0
                       ? this.state.result[Idx].output
                       : "null"} */}
                   </h1>
-                  <h1>Đầu ra mong muốn: {testCases.Output}</h1>
+                  <h1>Đầu ra mong muốn: {sampleTestCases.Output}</h1>
                 </div>
               )}
             </>
@@ -204,72 +235,59 @@ class Editor extends Component {
       </div>
     );
   }
-  getLanguages = () => {
-    axios.get(URI1 + "languages").then((response) => {
+  getLanguages = async () => {
+    await axios.get(serverUrl + "languages").then((response) => {
       this.setState({ languages: response.data });
       this.setState({ selected: response.data[0] });
     });
   };
-
-  // runTestingSampleTestCase= ()=> {
-  //   axios.get(URI2 + "sampletestcases/getlist").then((response) => {
-  //     var sampleTestCaseList = response.data;
-  //     var sampleTestCases = sampleTestCaseList.filter(function (sampleTestCaseList) {
-  //       return sampleTestCaseList.Question_id === questionID;
-  //     });
-  //     this.sampleTestingProcess(sampleTestCases);
-  //   });
-  // };
-  // btnRun_Click() {
-  //   disabledButton_Run(true);
-  //   this.runTestingSampleTestCase(this.state.testCases,code,language);
-  // }
   btnRun_Click(code, language) {
-    for (let i = 0; i < this.state.testCases.length; i++) {
+    for (let i = 0; i < this.state.sampleTestCases.length; i++) {
       var param = {
         run_spec: {
           language_id: language,
           sourcecode: code,
-          input: this.state.testCases[i].Input,
+          input: this.state.sampleTestCases[i].Input,
         },
       };
-      axios.post(URI1 + "runs", param).then((response) => {
+      axios.post(serverUrl + "runs", param).then((response) => {
         var result = response.data;
-        console.log(result);
-        this.checkSampleTestCase(this.state.testCases[i].Output, result, i);
-        // console.log("Pass: " + count + "/" + sampleTestCases.length);
-        // disabledButton_Run(false);
+        this.checkSampleTestCase_Run(
+          this.state.sampleTestCases[i].Output,
+          result,
+          i
+        );
       });
-      // this.submitCode_SampleTestCase(param, sampleTestCases, i);
     }
   }
-  checkSampleTestCase(Output, result, i) {
+  checkSampleTestCase_Run(Output, result, i) {
     if (result.outcome === 15) {
       if (Output === result.stdout) {
-        let temp = { accurate: "true", output: result.stdout };
         this.setState((prevState) => ({
-          testCases: prevState.testCases.map((testCases, Idx) =>
-            Idx === i
-              ? { ...testCases, accurate: "true", output: result.stdout }
-              : testCases
+          sampleTestCases: prevState.sampleTestCases.map(
+            (sampleTestCases, Idx) =>
+              Idx === i
+                ? {
+                    ...sampleTestCases,
+                    accurate: "true",
+                    output: result.stdout,
+                  }
+                : sampleTestCases
           ),
         }));
-        this.setState({ result: [...this.state.result, temp] });
-        this.setState({ count: this.state.count + 1 });
-        console.log(this.state.testCases);
-        console.log(this.state.result);
       } else {
-        console.log("fail");
-        let temp = { accurate: "false", output: result.stdout };
         this.setState((prevState) => ({
-          testCases: prevState.testCases.map((testCases, Idx) =>
-            Idx === i
-              ? { ...testCases, accurate: "false", output: result.stdout }
-              : testCases
+          sampleTestCases: prevState.sampleTestCases.map(
+            (sampleTestCases, Idx) =>
+              Idx === i
+                ? {
+                    ...sampleTestCases,
+                    accurate: "false",
+                    output: result.stdout,
+                  }
+                : sampleTestCases
           ),
         }));
-        this.setState({ result: [...this.state.result, temp] });
-        console.log(this.state.result);
       }
     } else if (result.outcome !== 15) {
       renderError(result);
@@ -305,6 +323,70 @@ class Editor extends Component {
         break;
     }
     // this.state
+  }
+  
+  btnSubmit_Click(code, language) {
+    let sampleTestCases = this.state.sampleTestCases;
+    let testCases = this.state.testCases;
+    let testCaseList = sampleTestCases.concat(testCases);
+    console.log("TestCase", testCaseList);
+    sessionStorage.setItem("Pass", 0);
+    sessionStorage.setItem("Total_TestCases", testCaseList.length);
+    sessionStorage.setItem("SourceCode", code);
+    sessionStorage.setItem("Description", this.state.Question.Description);
+    this.setState({ count: 0 });
+    for (let i = 0; i < testCaseList.length; i++) {
+      let param = {
+        run_spec: {
+          language_id: language,
+          sourcecode: code,
+          input: testCaseList[i].Input,
+        },
+      };
+      axios.post(serverUrl + "runs", param).then((response) => {
+        var result = response.data;
+        this.checkTestCase(
+          testCaseList[i].Output,
+          testCaseList[i].Input,
+          result,
+          i
+        );
+        // disabledButton_Run(false);
+      });
+      // this.submitCode_SampleTestCase(param, samplesampleTestCases, i);
+    }
+    console.log("Tổng pass", sessionStorage.getItem("Pass"));
+  }
+  checkTestCase(Output, Input, result) {
+    if (result.outcome === 15) {
+      if (Output == result.stdout) {
+        let temp = { accurate: "true", input: Input, output: result.stdout };
+        this.setState({
+          result: this.state.result.concat(temp),
+          count: this.state.count + 1,
+        });
+        console.log("pass", Output, "=", Input);
+        sessionStorage.setItem(
+          "Pass",
+          Number(sessionStorage.getItem("Pass")) + 1
+        );
+      } else {
+        var name = String("Fail" + this.state.count);
+        var data = String(
+          "Đầu vào: " +
+          Input +
+            " Đầu ra mong muốn: " +
+            Output +
+            " Đầu ra thực tế: " +
+            result.stdout
+        );
+        sessionStorage.setItem(name, data);
+        this.setState({count:this.state.count+1});
+      }
+    } else if (result.outcome !== 15) {
+      console.log("Error");
+      // renderError(result);
+    }
   }
 
   SelectLanguage() {
@@ -442,7 +524,9 @@ class Editor extends Component {
             role="tabpanel"
             aria-labelledby="tabs-home-tabFill"
           >
-            <h3 className="text-base font-medium">{this.state.Question.Title}</h3>
+            <h3 className="text-base font-medium">
+              {this.state.Question.Title}
+            </h3>
             <p>{this.state.Question.Description}</p>
           </div>
           <div
@@ -481,6 +565,58 @@ class Editor extends Component {
               pointer-events-none inline-block h-[26px] w-[26px] transform rounded-full bg-green-300 shadow-lg ring-0 transition duration-200 ease-in-out`}
           />
         </Switch>
+      </div>
+    );
+  }
+  renderModal() {
+    return (
+      <div
+        className="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
+        id="exampleModal"
+        tabIndex={-1}
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog mt-36 relative w-auto pointer-events-none">
+          <div className="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
+            <div className="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b border-gray-200 rounded-t-md">
+              <h5
+                className="text-xl font-medium leading-normal"
+                id="exampleModalLabel"
+              >
+                <SaveAsIcon className="text-green-600 inline h-8 w-8" />
+                XÁC NHẬN NỘP BÀI
+              </h5>
+              <button
+                type="button"
+                className="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              />
+            </div>
+            <div className="modal-body relative p-4">
+              Bạn có muốn nộp bài không?
+            </div>
+            <div className="modal-footer flex flex-shrink-0 flex-wrap items-center justify-center p-4 border-t border-gray-200 rounded-b-md">
+              <button
+                type="button"
+                class="inline-block px-6 py-2 border-2 border-blue-400 text-blue-400 font-medium text-xs leading-tight uppercase rounded-full hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
+                data-bs-dismiss="modal"
+              >
+                Không nộp
+              </button>
+              <Link to="/result">
+                <button
+                  type="button"
+                  class="inline-block px-6 py-2.5 bg-blue-400 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-500 hover:shadow-lg focus:bg-blue-500 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-600 active:shadow-lg transition duration-150 ease-in-out"
+                  data-bs-dismiss="modal"
+                >
+                  NỘP BÀI
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -530,7 +666,7 @@ class Editor extends Component {
                   <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"></path>
                 </svg>
                 <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">
-                  Tính tổng
+                  {this.state.Question.Title}
                 </span>
               </div>
             </li>
@@ -595,7 +731,7 @@ class Editor extends Component {
             </div>
             <div className=" bg-slate-800 h-96">
               {this.renderTestCase()}
-              {renderModal()}
+              {this.renderModal()}
               <div className="flex float-right px-4 py-4">
                 <button
                   type="button"
@@ -617,9 +753,12 @@ class Editor extends Component {
                   data-mdb-ripple="true"
                   data-mdb-ripple-color="light"
                   className="ml-2 px-4 pt-2.5 pb-2 bg-lime-600 text-white font-medium text-xs leading-tight  uppercase rounded shadow-md hover:bg-lime-700 hover:shadow-lg focus:bg-lime-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-lime-700 active:shadow-lg transition duration-150 ease-in-out flex align-center"
-                  // onClick={() => {
-                  //   renderModal();
-                  // }}
+                  onClick={() => {
+                    this.btnSubmit_Click(
+                      this.state.code,
+                      this.state.selected[0]
+                    );
+                  }}
                   data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                 >
@@ -640,28 +779,6 @@ class Editor extends Component {
 }
 
 export default Editor;
-
-// function Editor() {
-//   const [code, setCode] = useState("console.log('hello world!');");
-//   const [testCaseResults, setTestCaseResults] = useState([]);
-//   const [collapsed, setCollapsed] = useState(null);
-//   const [enabled, setEnabled] = useState(false);
-
-//   return (
-
-//   );
-// }
-
-// const Options = ({ children }) => {
-//   return (
-//     <div className="bg-gray-300 relative overflow-hidden">
-//       <div className="absolute top-2 left-2 flex flex-col space-y-2">
-//         {children}
-//       </div>
-//     </div>
-//   );
-// };
-
 /* Start Helper Methods */
 function renderError(result) {
   var output = "";
@@ -709,56 +826,4 @@ function disabledButton_Submit(isDisabled) {
     document.getElementById("btnSubmit").value = "Nộp bài";
   }
 }
-function renderModal() {
-  return (
-    <div
-      className="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
-      id="exampleModal"
-      tabIndex={-1}
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
-      <div className="modal-dialog mt-36 relative w-auto pointer-events-none">
-        <div className="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
-          <div className="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b border-gray-200 rounded-t-md">
-            <h5
-              className="text-xl font-medium leading-normal"
-              id="exampleModalLabel"
-            >
-              <SaveAsIcon className="text-green-600 inline h-8 w-8" />
-              NỘP BÀI THÀNH CÔNG
-            </h5>
-            <button
-              type="button"
-              className="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            />
-          </div>
-          <div className="modal-body relative p-4">Kết quả</div>
-
-          <div className="modal-footer flex flex-shrink-0 flex-wrap items-center justify-center p-4 border-t border-gray-200 rounded-b-md">
-            <button
-              type="button"
-              class="inline-block px-6 py-2 border-2 border-blue-400 text-blue-400 font-medium text-xs leading-tight uppercase rounded-full hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
-              data-bs-dismiss="modal"
-            >
-              Ở LẠI
-            </button>
-            <Link to="/practice">
-              <button
-                type="button"
-                class="inline-block px-6 py-2.5 bg-blue-400 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-500 hover:shadow-lg focus:bg-blue-500 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-600 active:shadow-lg transition duration-150 ease-in-out"
-                data-bs-dismiss="modal"
-              >
-                TRỞ LẠI LUYỆN TẬP
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* End Helper Methods */
