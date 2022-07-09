@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/Do-An-Chuyen-Nganh-A/static/css/main.aa8a407f.css",
+    "main.js": "/Do-An-Chuyen-Nganh-A/static/js/main.ee33c8a0.js",
+    "static/media/avatar3.jpg": "/Do-An-Chuyen-Nganh-A/static/media/avatar3.59c2fae4fe81f3b24466.jpg",
+    "static/media/avatar1.jpg": "/Do-An-Chuyen-Nganh-A/static/media/avatar1.9825c38a61f400dbcaba.jpg",
+    "static/media/avatar2.jpg": "/Do-An-Chuyen-Nganh-A/static/media/avatar2.88754fd68c5e55d1b477.jpg",
+    "static/media/img1.jpg": "/Do-An-Chuyen-Nganh-A/static/media/img1.d925aae876074a5bd97a.jpg",
+    "static/media/congratulation.gif": "/Do-An-Chuyen-Nganh-A/static/media/congratulation.384a0f43c305d5f63026.gif",
+    "static/media/img2.jpg": "/Do-An-Chuyen-Nganh-A/static/media/img2.2893eeb3e9e58cdb7fa8.jpg",
+    "static/media/img4.jpg": "/Do-An-Chuyen-Nganh-A/static/media/img4.69e57a4404f9e8de7909.jpg",
+    "static/media/img6.jpg": "/Do-An-Chuyen-Nganh-A/static/media/img6.0598b335304a82dd3401.jpg",
+    "static/media/img5.jpg": "/Do-An-Chuyen-Nganh-A/static/media/img5.4107afcedb58c315028a.jpg",
+    "index.html": "/Do-An-Chuyen-Nganh-A/index.html",
+    "main.aa8a407f.css.map": "/Do-An-Chuyen-Nganh-A/static/css/main.aa8a407f.css.map",
+    "main.ee33c8a0.js.map": "/Do-An-Chuyen-Nganh-A/static/js/main.ee33c8a0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.aa8a407f.css",
+    "static/js/main.ee33c8a0.js"
+  ]
+}
