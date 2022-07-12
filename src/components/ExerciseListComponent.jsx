@@ -130,13 +130,13 @@ class ExerciseListComponent extends Component {
     );
     return (
       <div>
-        <div className="container my-4 px-6 mx-auto">
+        <div className="container my-4 px-6">
           <img src={img2} className="w-full h-52 mb-3" alt="" />
           <section className="mb-32 text-gray-800">
             <h2 className="text-3xl font-bold mb-12 pb-4 text-center">
               Danh sách bài tập
             </h2>
-            <div className="grid lg:grid-cols-3 gap-6 xl:gap-x-12">
+            <div className="grid lg:grid-cols-4 lg:gap-3 gap-2 xl:gap-x-3">
               {exercisesList}
             </div>
             {this.handlePagination()}

@@ -68,9 +68,9 @@ class Editor extends PureComponent {
       isShowing: false,
       isError: false,
       error: null,
-      content:[],
-      disabled:true,
-      disabledButton:"Đang xử lý",
+      content: [],
+      disabled: true,
+      disabledButton: "Đang xử lý",
     };
   }
   async componentDidMount() {
@@ -85,6 +85,10 @@ class Editor extends PureComponent {
     if (sessionStorage.getItem("Source_code"))
       this.setState({ code: sessionStorage.getItem("Source_code") });
     this.getHistory();
+  }
+  componentWillUnmount() {
+    // if (sessionStorage.getItem("Source_code")!==null)
+    //   sessionStorage.setItem("Source_code", "");
   }
   getSampleTestCases = async (Question_id) => {
     await axios
@@ -350,12 +354,12 @@ class Editor extends PureComponent {
         this.checkTestCase(
           testCaseList[i].Output,
           testCaseList[i].Input,
-          result,
+          result
         );
       });
     }
-    this.setState({ disabled: false});
-    this.setState({ disabledButton:"Nộp Bài"});
+    this.setState({ disabled: false });
+    this.setState({ disabledButton: "Nộp Bài" });
   }
   checkTestCase(Output, Input, result) {
     if (result.outcome === 15) {
@@ -465,8 +469,7 @@ class Editor extends PureComponent {
   renderHistory(data) {
     var content = [];
     for (let i = 0; i < data.length; i++) {
-      if (data[i].Question_id==this.state.Question_id)
-      {
+      if (data[i].Question_id == this.state.Question_id) {
         content.push(
           <tr class="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
