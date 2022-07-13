@@ -118,9 +118,6 @@ class Main extends Component {
     const LoginPage = () => {
       return (
         <div>
-          {/* <Header />
-          <Result />
-          <Footer /> */}
           <Login />
         </div>
       );
@@ -128,9 +125,6 @@ class Main extends Component {
     const RegisterPage = () => {
       return (
         <div>
-          {/* <Header />
-          <Result />
-          <Footer /> */}
           <Register />
         </div>
       );
